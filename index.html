@@ -69,6 +69,24 @@
     transform: scale(1.2);
   }
 
+  .price-box {
+    margin-top: 10px;
+    background: rgba(0,0,0,0.35);
+    padding: 10px;
+    border-radius: 10px;
+    display: none;
+    text-align: left;
+  }
+
+  .total {
+    margin-top: 10px;
+    font-size: 18px;
+    background: rgba(255,255,255,0.1);
+    padding: 10px;
+    border-radius: 8px;
+    display: none;
+  }
+
   .whatsapp-btn {
     margin-top: 16px;
     padding: 12px 18px;
@@ -103,16 +121,19 @@
   <div class="services">
     <strong>Seleccione los servicios:</strong><br><br>
 
-    <label><input type="checkbox" value="Reparación de PC o Notebook"> 🖥️ Reparación de PC o Notebook</label>
-    <label><input type="checkbox" value="Instalación de Windows"> 💿 Instalación de Windows</label>
-    <label><input type="checkbox" value="Optimización de rendimiento"> ⚡ Optimización de rendimiento</label>
-    <label><input type="checkbox" value="Formateo"> 🔄 Formateo</label>
-    <label><input type="checkbox" value="Respaldo de datos"> 💾 Respaldo de datos</label>
-    <label><input type="checkbox" value="Diagnóstico remoto"> 🛰️ Diagnóstico remoto</label>
-    <label><input type="checkbox" value="Limpieza interna de PC"> 🧹 Limpieza interna de PC</label>
-    <label><input type="checkbox" value="Instalación de Office"> 📦 Instalación de Office</label>
-
+    <label><input type="checkbox" value="Reparación de PC o Notebook" data-price="15000"> 🖥️ Reparación de PC o Notebook</label>
+    <label><input type="checkbox" value="Instalación de Windows" data-price="10000"> 💿 Instalación de Windows</label>
+    <label><input type="checkbox" value="Optimización de rendimiento" data-price="8000"> ⚡ Optimización de rendimiento</label>
+    <label><input type="checkbox" value="Formateo" data-price="12000"> 🔄 Formateo</label>
+    <label><input type="checkbox" value="Respaldo de datos" data-price="15000"> 💾 Respaldo de datos</label>
+    <label><input type="checkbox" value="Diagnóstico remoto" data-price="5000"> 🛰️ Diagnóstico remoto</label>
+    <label><input type="checkbox" value="Limpieza interna de PC" data-price="12000"> 🧹 Limpieza interna de PC</label>
+    <label><input type="checkbox" value="Instalación de Office" data-price="5000"> 📦 Instalación de Office</label>
   </div>
+
+  <div id="priceBox" class="price-box"></div>
+
+  <div id="totalBox" class="total"></div>
 
   <a id="whatsappBtn" class="whatsapp-btn" target="_blank">
     💬 Contactar por WhatsApp
@@ -121,26 +142,67 @@
 
 <script>
   const phone = "56998754690";
+  const priceBox = document.getElementById("priceBox");
+  const totalBox = document.getElementById("totalBox");
+  const checks = document.querySelectorAll(".services input[type='checkbox']");
 
+  function formatMoney(num) {
+    return '$' + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  // Mostrar precios + total dinámico
+  checks.forEach(chk => {
+    chk.addEventListener("change", () => {
+      let html = "";
+      let total = 0;
+      const seleccionados = document.querySelectorAll(".services input:checked");
+
+      if (seleccionados.length > 0) {
+        seleccionados.forEach(s => {
+          const price = parseInt(s.dataset.price);
+          total += price;
+          html += `<div>✔ ${s.value}: <b>${formatMoney(price)}</b></div>`;
+        });
+
+        priceBox.innerHTML = html;
+        priceBox.style.display = "block";
+
+        totalBox.innerHTML = `<b>Total estimado: ${formatMoney(total)}</b>`;
+        totalBox.style.display = "block";
+
+      } else {
+        priceBox.style.display = "none";
+        totalBox.style.display = "none";
+      }
+    });
+  });
+
+  // WhatsApp
   document.getElementById("whatsappBtn").addEventListener("click", function(){
 
-    const checks = document.querySelectorAll(".services input:checked");
-    if (checks.length === 0) {
+    const seleccionados = document.querySelectorAll(".services input:checked");
+    if (seleccionados.length === 0) {
       alert("Seleccione al menos un servicio.");
       return;
     }
 
     let servicios = "";
-    checks.forEach(c => servicios += "- " + c.value + "%0A");
+    let total = 0;
+
+    seleccionados.forEach(s => {
+      const price = parseInt(s.dataset.price);
+      total += price;
+      servicios += `- ${s.value} (${formatMoney(price)})%0A`;
+    });
 
     const mensaje = 
 `Hola William,%0A
 Necesito ayuda con:%0A
-${servicios}%0A
+${servicios}
+Total estimado: ${formatMoney(total)}%0A
 Gracias.`;
 
     const url = "https://wa.me/" + phone + "?text=" + mensaje;
-
     window.open(url, "_blank");
   });
 </script>
